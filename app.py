@@ -6,16 +6,12 @@ from selenium import webdriver
 
 app = Flask(__name__)
 
-# Attempt to find Chrome at common locations
-def get_chrome_path():
-    common_paths = ["/usr/bin/google-chrome", "/usr/bin/chrome", "/opt/google/chrome/google-chrome"]
-    for path in common_paths:
-        if os.path.exists(path):
-            return path
-    raise RuntimeError("Google Chrome is not installed at any expected location.")
+# Retrieve Chrome path from environment variable
+chrome_path = os.getenv("CHROME_PATH", "/usr/bin/google-chrome")
 
-# Retrieve the Chrome path
-chrome_path = get_chrome_path()
+if not os.path.exists(chrome_path):
+    raise RuntimeError(f"Google Chrome is not installed at the expected location: {chrome_path}")
+
 print(f"Using Chrome at: {chrome_path}")
 
 # Automatically install the matching ChromeDriver version
@@ -40,7 +36,7 @@ if __name__ == '__main__':
     # Set up Selenium with Chrome
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    options.binary_location = chrome_path  # Set the dynamically found path
+    options.binary_location = chrome_path  # Use the environment variable
     
     driver = webdriver.Chrome(options=options)
     driver.get(TARGET_URL)
