@@ -12,7 +12,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s /usr/bin/google-chrome /usr/bin/chrome \
-    && google-chrome --version || echo "Google Chrome not found."
+    && echo "Chrome installed at:" $(which google-chrome) \
+    && echo "Chrome version:" && google-chrome --version
+
+# Set environment variable for Chrome path
+ENV CHROME_PATH=/usr/bin/google-chrome
 
 # Set the working directory in the container
 WORKDIR /app
