@@ -6,13 +6,13 @@ from selenium import webdriver
 
 app = Flask(__name__)
 
-# Retrieve Chrome path from environment variable
-chrome_path = os.getenv("CHROME_PATH", "/usr/bin/google-chrome")
+# Retrieve Chromium path from environment variable
+chrome_path = os.getenv("CHROME_PATH", "/usr/bin/chromium")
 
 if not os.path.exists(chrome_path):
-    raise RuntimeError(f"Google Chrome is not installed at the expected location: {chrome_path}")
+    raise RuntimeError(f"Chromium is not installed at the expected location: {chrome_path}")
 
-print(f"Using Chrome at: {chrome_path}")
+print(f"Using Chromium at: {chrome_path}")
 
 # Automatically install the matching ChromeDriver version
 chromedriver_autoinstaller.install()
@@ -33,10 +33,10 @@ def proxy(path):
 if __name__ == '__main__':
     TARGET_URL = 'https://www.sbobet.com'
     
-    # Set up Selenium with Chrome
+    # Set up Selenium with Chromium
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    options.binary_location = chrome_path  # Use the environment variable
+    options.binary_location = chrome_path  # Use Chromium path
     
     driver = webdriver.Chrome(options=options)
     driver.get(TARGET_URL)
