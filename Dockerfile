@@ -1,22 +1,15 @@
 # Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
-# Install necessary packages and Google Chrome
+# Install necessary packages, including Chromium
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg2 \
+    chromium-driver \
+    chromium \
     unzip \
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/google-chrome /usr/bin/chrome \
-    && echo "Chrome installed at:" $(which google-chrome) \
-    && echo "Chrome version:" && google-chrome --version
+    && rm -rf /var/lib/apt/lists/*
 
-# Set environment variable for Chrome path
-ENV CHROME_PATH=/usr/bin/google-chrome
+# Set environment variable for Chromium path
+ENV CHROME_PATH=/usr/bin/chromium
 
 # Set the working directory in the container
 WORKDIR /app
