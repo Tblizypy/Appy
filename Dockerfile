@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/google-chrome /usr/bin/chrome \
     && google-chrome --version || echo "Google Chrome not found."
 
 # Set the working directory in the container
