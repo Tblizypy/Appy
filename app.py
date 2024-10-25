@@ -26,7 +26,7 @@ def login():
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Navigate to the sbobet login page
-    driver.get("https://www.sbobet.com/login")
+    driver.get("https://www.sbobet.com")
 
     # Wait for the username and password fields to be present
     wait = WebDriverWait(driver, 10)
