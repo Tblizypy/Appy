@@ -43,6 +43,8 @@ if __name__ == '__main__':
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Run in headless mode if needed
     options.binary_location = chrome_path  # Specify the Chrome location
+
+    # Initialize the WebDriver
     driver = webdriver.Chrome(options=options)
 
     # Example usage: navigate to a webpage
