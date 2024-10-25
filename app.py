@@ -17,6 +17,9 @@ def proxy(path):
     
     # Add User-Agent header to mimic a real browser
     headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+    
+    # Spoof the Host header to make it seem like the request is coming from the target domain
+    headers['Host'] = 'www.sbobet.com'
 
     # Forward the cookies from the client
     cookies = {key: value for key, value in request.cookies.items()}
