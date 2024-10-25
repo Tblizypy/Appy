@@ -1,6 +1,7 @@
 from flask import Flask, request, Response
 import requests
 import os
+import subprocess
 import chromedriver_autoinstaller
 from selenium import webdriver
 
@@ -9,14 +10,10 @@ app = Flask(__name__)
 # Automatically install the correct version of ChromeDriver
 chromedriver_autoinstaller.install()
 
-TARGET_URL = 'https://www.sbobet.com'
-
-# Set up Selenium with Chrome WebDriver
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # Run in headless mode if needed
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome(options=options)
+# Check for Chrome executable
+chrome_path = "/usr/bin/google-chrome"
+if not os.path.exists(chrome_path):
+    raise RuntimeError("Google Chrome is not installed at the expected location.")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
@@ -33,15 +30,23 @@ def proxy(path):
     else:
         response = requests.get(target_url, headers=headers, params=request.args)
 
-    # Return the response from sbobet.com
+    # Return the response
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]
 
     return Response(response.content, response.status_code, headers)
 
 if __name__ == '__main__':
-    # Example usage: navigate to a webpage (optional)
+    TARGET_URL = 'https://www.sbobet.com'
+    
+    # Set up Selenium with Chrome WebDriver
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run in headless mode if needed
+    options.binary_location = chrome_path  # Specify the Chrome location
+    driver = webdriver.Chrome(options=options)
+
+    # Example usage: navigate to a webpage
     driver.get(TARGET_URL)
     print(driver.title)  # Prints the title of the webpage
 
-    app.run(host='0.0.0.0', port=5000)  # Bind to all IP addresses
+    app.run(debug=True)
