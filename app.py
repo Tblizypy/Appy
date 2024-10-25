@@ -1,5 +1,10 @@
 from flask import Flask, request, Response
 import requests
+import chromedriver_autoinstaller  # Import the autoinstaller
+from selenium import webdriver  # Import Selenium WebDriver
+
+# Automatically install the correct version of ChromeDriver
+chromedriver_autoinstaller.install()
 
 app = Flask(__name__)
 
@@ -14,21 +19,12 @@ def proxy(path):
 
     # Forward the request headers
     headers = {key: value for key, value in request.headers if key != 'Host'}
-    
-    # Add User-Agent header to mimic a real browser
-    headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
-    
-    # Spoof the Host header to make it seem like the request is coming from the target domain
-    headers['Host'] = 'www.sbobet.com'
-
-    # Forward the cookies from the client
-    cookies = {key: value for key, value in request.cookies.items()}
 
     # Forward GET and POST requests
     if request.method == 'POST':
-        response = requests.post(target_url, headers=headers, data=request.form, cookies=cookies)
+        response = requests.post(target_url, headers=headers, data=request.form)
     else:
-        response = requests.get(target_url, headers=headers, params=request.args, cookies=cookies)
+        response = requests.get(target_url, headers=headers, params=request.args)
 
     # Return the response from sbobet.com
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
@@ -37,4 +33,13 @@ def proxy(path):
     return Response(response.content, response.status_code, headers)
 
 if __name__ == '__main__':
+    # Set up Selenium with Chrome WebDriver
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run in headless mode if needed (no browser UI)
+    driver = webdriver.Chrome(options=options)
+
+    # Example usage: navigate to a webpage
+    driver.get("https://www.sbobet.com")
+    print(driver.title)  # Prints the title of the webpage
+
     app.run(debug=True)
