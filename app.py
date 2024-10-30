@@ -17,6 +17,9 @@ print(f"Using Google Chrome at: {chrome_path}")
 # Automatically install the matching ChromeDriver version
 chromedriver_autoinstaller.install()
 
+# Define TARGET_URL globally
+TARGET_URL = 'https://play.sbobet.com'
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def proxy(path):
@@ -31,8 +34,6 @@ def proxy(path):
     return Response(response.content, response.status_code, headers)
 
 if __name__ == '__main__':
-    TARGET_URL = 'https://www.sbobet.com'
-    
     # Set up Selenium with Chrome
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
