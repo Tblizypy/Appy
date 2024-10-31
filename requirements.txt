@@ -20,6 +20,7 @@ eth-utils==5.0.0
 eth_abi==5.1.0
 Flask==3.0.3
 frozenlist==1.4.1
+flask-Compress
 h11==0.14.0
 hexbytes==1.2.1
 httpcore==1.0.6
@@ -59,4 +60,4 @@ wsproto==1.2.0
 yarl==1.15.5
 gunicorn==20.1.0
 chromedriver-autoinstaller
-Flask-Caching
+
