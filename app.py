@@ -51,6 +51,9 @@ def proxy(path):
             content = re.sub(r'https?://(?:help|info)\.sbobet\.com/article/([a-zA-Z0-9-]+)-(\d+)\.html',
                              f'{request.url_root}help/\\1-\\2',
                              content)
+                             
+            # Remove target="_blank" to prevent new tabs from opening
+            content = re.sub(r'target="_blank"', '', content)
 
             # Replace all absolute URLs to ensure the user stays within your domain
             content = content.replace('https://account.sbobet.com', request.url_root)
@@ -98,6 +101,9 @@ def help_redirect(article):
         # Update relative paths in the HTML content to stay within your domain
         content = content.replace('href="/', f'href="{request.url_root}')
         content = content.replace('src="/', f'src="{request.url_root}')
+        
+        # Remove target="_blank" to prevent new tabs from opening
+        content = re.sub(r'target="_blank"', '', content)
         
         return Response(content, status=response.status_code, headers={'Content-Type': 'text/html'})
 
