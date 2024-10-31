@@ -18,7 +18,7 @@ print(f"Using Google Chrome at: {chrome_path}")
 chromedriver_autoinstaller.install()
 
 # Define TARGET_URL globally
-TARGET_URL = 'https://play.sbobet.com'
+TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
