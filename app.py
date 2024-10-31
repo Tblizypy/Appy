@@ -38,8 +38,14 @@ def proxy(path):
     if 'text/html' in response.headers.get('Content-Type', ''):
         content = response.content.decode('utf-8')
 
-        # Update links in the HTML content
+        # Update links and resources in the HTML content
         content = content.replace('href="', f'href="{request.url_root}')
+        content = content.replace('src="', f'src="{request.url_root}')
+        
+        # Handle <link> tags for CSS
+        content = content.replace('link href="', f'link href="{request.url_root}')
+        
+        # Handle <script> tags if they use absolute URLs
         content = content.replace('src="', f'src="{request.url_root}')
 
         response_content = content.encode('utf-8')
