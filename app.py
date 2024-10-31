@@ -27,9 +27,10 @@ TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def proxy(path):
-    target_url = f'{TARGET_URL}/{path}'
+    # Construct the target URL based on the path
+    target_url = f'{TARGET_URL}/{path}' if path else TARGET_URL
     
-    # Check if the target URL is external
+    # Check if the target URL is external (any path that doesn't start with the base URL)
     if not target_url.startswith(TARGET_URL):
         logging.info(f"Redirecting to error page for external link: {target_url}")
         return redirect('/error')
