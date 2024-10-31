@@ -1,10 +1,14 @@
-from flask import Flask, request, Response, render_template_string
+from flask import Flask, request, Response, redirect, render_template_string
 import requests
 import os
 import chromedriver_autoinstaller
 from selenium import webdriver
+import logging
 
 app = Flask(__name__)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Retrieve Chrome path from environment variable
 chrome_path = os.getenv("CHROME_PATH", "/usr/bin/google-chrome")
@@ -24,6 +28,12 @@ TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def proxy(path):
     target_url = f'{TARGET_URL}/{path}'
+    
+    # Check if the target URL is external
+    if not target_url.startswith(TARGET_URL):
+        logging.info(f"Redirecting to error page for external link: {target_url}")
+        return redirect('/error')
+
     headers = {key: value for key, value in request.headers if key != 'Host'}
 
     if request.method == 'POST':
@@ -46,7 +56,6 @@ def proxy(path):
 
                     links.forEach(link => {
                         link.addEventListener('click', function (event) {
-                            // Check if the link is external by comparing the hostname
                             const linkHost = new URL(link.href).hostname;
                             if (linkHost !== window.location.hostname) {
                                 event.preventDefault();
