@@ -44,23 +44,12 @@ def proxy(path):
         if 'text/html' in response.headers.get('Content-Type', ''):
             content = response.content.decode('utf-8')
             
-            # Update relative paths in the HTML content
-            content = content.replace('href="/', f'href="{request.url_root}')
-            content = content.replace('src="/', f'src="{request.url_root}')
+            # Replace all links to external domains with the error page link
+            content = re.sub(r'href="https?://[^"]+"', 'href="/error"', content)
+            content = re.sub(r'src="https?://[^"]+"', 'src="/error"', content)
             
-            # Fix <base> tag if it exists
-            content = content.replace('<base href="', f'<base href="{request.url_root}')
-            
-            # Redirect all links that point to help and info articles to your local /help path
-            content = re.sub(r'https?://(?:help|info)\.sbobet\.com/article/([a-zA-Z0-9-]+)-(\d+)\.html',
-                             f'{request.url_root}help/\\1-\\2',
-                             content)
-                             
             # Remove target="_blank" to prevent new tabs from opening
             content = re.sub(r'target="_blank"', '', content)
-
-            # Replace all absolute URLs to ensure the user stays within your domain
-            content = content.replace('https://account.sbobet.com', request.url_root)
 
             response_content = content.encode('utf-8')
             headers.append(('Content-Type', 'text/html'))  # Explicitly set Content-Type
@@ -93,31 +82,34 @@ def proxy(path):
         """
         return Response(error_message, status=500, mimetype='text/html')
 
-# Create a route to handle help articles within your domain
-@app.route('/help/<path:article>')
-def help_redirect(article):
-    # Construct the full help article URL
-    help_url = f'https://help.sbobet.com/article/{article}'
-    headers = {
-        'Referer': TARGET_URL,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36'
-    }
-    
-    try:
-        response = requests.get(help_url, headers=headers)
-        content = response.content.decode('utf-8')
-        
-        # Update relative paths in the HTML content to stay within your domain
-        content = content.replace('href="/', f'href="{request.url_root}')
-        content = content.replace('src="/', f'src="{request.url_root}')
-        
-        # Remove target="_blank" to prevent new tabs from opening
-        content = re.sub(r'target="_blank"', '', content)
-        
-        return Response(content, status=response.status_code, headers={'Content-Type': 'text/html'})
-
-    except requests.RequestException:
-        return Response("<h1>Error: Unable to retrieve help article</h1>", status=500)
+# Create a route to handle the custom error page
+@app.route('/error')
+def custom_error_page():
+    # Custom error page content
+    error_page = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bandwidth Limit Exceeded</title>
+        <style>
+            body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; background-color: #f8f8f8; }
+            .error-container { text-align: center; max-width: 600px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fff; }
+            h1 { color: #333; }
+            p { color: #666; }
+        </style>
+    </head>
+    <body>
+        <div class="error-container">
+            <h1>Bandwidth Limit Exceeded</h1>
+            <p>Our hosting plan's bandwidth is currently insufficient to support this content. Please bear with us as we work to increase our capacity.</p>
+            <p>Thank you for your understanding.</p>
+        </div>
+    </body>
+    </html>
+    """
+    return Response(error_page, status=200, mimetype='text/html')
 
 if __name__ == '__main__':
     # Set up Selenium with Chrome
