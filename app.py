@@ -47,8 +47,8 @@ def proxy(path):
             # Fix <base> tag if it exists
             content = content.replace('<base href="', f'<base href="{request.url_root}')
             
-            # Redirect all links that point to the help articles to your local /help path
-            content = re.sub(r'https://help\.sbobet\.com/article/([a-zA-Z0-9-]+)-(\d+)\.html',
+            # Redirect all links that point to help and info articles to your local /help path
+            content = re.sub(r'https?://(?:help|info)\.sbobet\.com/article/([a-zA-Z0-9-]+)-(\d+)\.html',
                              f'{request.url_root}help/\\1-\\2',
                              content)
 
