@@ -45,6 +45,9 @@ def proxy(path):
         # Fix <base> tag if it exists
         content = content.replace('<base href="', f'<base href="{request.url_root}')
         
+        # Replace all absolute URLs to ensure the user stays within your domain
+        content = content.replace('https://account.sbobet.com', request.url_root)
+
         response_content = content.encode('utf-8')
         headers.append(('Content-Type', 'text/html'))  # Explicitly set Content-Type
         return Response(response_content, response.status_code, headers)
