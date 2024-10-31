@@ -3,6 +3,7 @@ import requests
 import os
 import chromedriver_autoinstaller
 from selenium import webdriver
+import re
 
 app = Flask(__name__)
 
@@ -46,8 +47,10 @@ def proxy(path):
             # Fix <base> tag if it exists
             content = content.replace('<base href="', f'<base href="{request.url_root}')
             
-            # Redirect all external help links to your local proxy
-            content = content.replace('https://help.sbobet.com', f'{request.url_root}help')
+            # Redirect all links that point to the help articles to your local /help path
+            content = re.sub(r'https://help\.sbobet\.com/article/([a-zA-Z0-9-]+)-(\d+)\.html',
+                             f'{request.url_root}help/\\1-\\2',
+                             content)
 
             # Replace all absolute URLs to ensure the user stays within your domain
             content = content.replace('https://account.sbobet.com', request.url_root)
