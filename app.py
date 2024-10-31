@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, redirect, render_template_string
+from flask import Flask, request, Response, render_template_string
 import requests
 import os
 import chromedriver_autoinstaller
@@ -27,20 +27,24 @@ TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def proxy(path):
-    # Construct the target URL based on the path
     target_url = f'{TARGET_URL}/{path}' if path else TARGET_URL
     
-    # Check if the target URL is external (any path that doesn't start with the base URL)
-    if not target_url.startswith(TARGET_URL):
-        logging.info(f"Redirecting to error page for external link: {target_url}")
-        return redirect('/error')
-
     headers = {key: value for key, value in request.headers if key != 'Host'}
 
-    if request.method == 'POST':
-        response = requests.post(target_url, headers=headers, data=request.form)
-    else:
-        response = requests.get(target_url, headers=headers, params=request.args)
+    try:
+        if request.method == 'POST':
+            response = requests.post(target_url, headers=headers, data=request.form)
+        else:
+            response = requests.get(target_url, headers=headers, params=request.args)
+        
+        # If the target URL responds with a 4xx or 5xx status code
+        if response.status_code >= 400:
+            logging.info(f"Received {response.status_code} from {target_url}. Redirecting to error page.")
+            return redirect('/error')
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request to {target_url} failed: {e}")
+        return redirect('/error')
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]
