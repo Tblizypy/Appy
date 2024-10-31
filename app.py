@@ -2,13 +2,16 @@ from flask import Flask, request, Response, render_template_string
 import requests
 import os
 import chromedriver_autoinstaller
-from selenium import webdriver
 from flask_caching import Cache
 from flask_compress import Compress
+from flask_cors import CORS
 
 app = Flask(__name__)
 
-# Set up caching
+# Set up CORS for cross-origin support on mobile
+CORS(app)
+
+# Set up caching and compression
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 Compress(app)  # Enable Gzip compression
 
@@ -102,13 +105,5 @@ def error_page():
     return render_template_string(error_html)
 
 if __name__ == '__main__':
-    # Set up Selenium with Chrome
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.binary_location = chrome_path  # Use Google Chrome path
-    
-    driver = webdriver.Chrome(options=options)
-    driver.get(TARGET_URL)
-    print(driver.title)
-
-    app.run(debug=True)
+    # Set up the app to listen on all IPs for external access
+    app.run(host='0.0.0.0', port=80, debug=True)
