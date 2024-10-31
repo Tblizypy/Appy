@@ -39,14 +39,18 @@ def proxy(path):
         content = response.content.decode('utf-8')
 
         # Update links and resources in the HTML content
-        content = content.replace('href="', f'href="{request.url_root}')
-        content = content.replace('src="', f'src="{request.url_root}')
+        content = content.replace('href="/', f'href="{request.url_root}')
+        content = content.replace('src="/', f'src="{request.url_root}')
         
-        # Handle <link> tags for CSS
+        # Update link tags for CSS
         content = content.replace('link href="', f'link href="{request.url_root}')
         
-        # Handle <script> tags if they use absolute URLs
+        # Update script tags for JS
         content = content.replace('src="', f'src="{request.url_root}')
+
+        # Handle absolute URLs (update protocol and domain)
+        content = content.replace('href="http', f'href="{request.url_root}http')
+        content = content.replace('src="http', f'src="{request.url_root}http')
 
         response_content = content.encode('utf-8')
         return Response(response_content, response.status_code, headers)
