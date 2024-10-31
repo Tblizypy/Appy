@@ -25,7 +25,11 @@ TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def proxy(path):
     target_url = f'{TARGET_URL}/{path}'
-    headers = {key: value for key, value in request.headers if key != 'Host'}
+    headers = {
+        key: value for key, value in request.headers if key.lower() not in ['host', 'referer']
+    }
+    headers['Referer'] = TARGET_URL  # Spoof the Referer header
+    headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36'
 
     try:
         if request.method == 'POST':
@@ -94,8 +98,13 @@ def proxy(path):
 def help_redirect(article):
     # Construct the full help article URL
     help_url = f'https://help.sbobet.com/article/{article}'
+    headers = {
+        'Referer': TARGET_URL,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36'
+    }
+    
     try:
-        response = requests.get(help_url)
+        response = requests.get(help_url, headers=headers)
         content = response.content.decode('utf-8')
         
         # Update relative paths in the HTML content to stay within your domain
