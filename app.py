@@ -37,19 +37,16 @@ def proxy(path):
     # Modify response content for HTML pages
     if 'text/html' in response.headers.get('Content-Type', ''):
         content = response.content.decode('utf-8')
-
-        # Update links in the HTML content
-        content = content.replace('href="', f'href="{request.url_root}')
-        content = content.replace('src="', f'src="{request.url_root}')
-
+        
+        # Update relative paths in the HTML content
+        content = content.replace('href="/', f'href="{request.url_root}')
+        content = content.replace('src="/', f'src="{request.url_root}')
+        
         # Fix <base> tag if it exists
         content = content.replace('<base href="', f'<base href="{request.url_root}')
         
-        # Handle other common absolute URLs
-        content = content.replace('href="http', f'href="{request.url_root}http')
-        content = content.replace('src="http', f'src="{request.url_root}http')
-
         response_content = content.encode('utf-8')
+        headers.append(('Content-Type', 'text/html'))  # Explicitly set Content-Type
         return Response(response_content, response.status_code, headers)
 
     return Response(response.content, response.status_code, headers)
