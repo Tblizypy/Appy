@@ -3,12 +3,14 @@ import requests
 import os
 import chromedriver_autoinstaller
 from selenium import webdriver
-import logging
+from flask_caching import Cache
+from flask_compress import Compress
 
 app = Flask(__name__)
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up caching
+cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
+Compress(app)  # Enable Gzip compression
 
 # Retrieve Chrome path from environment variable
 chrome_path = os.getenv("CHROME_PATH", "/usr/bin/google-chrome")
@@ -26,25 +28,15 @@ TARGET_URL = 'https://www.sbobet.com/betting.aspx'
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
+@cache.cached(timeout=60, query_string=True)  # Cache the proxy responses
 def proxy(path):
-    target_url = f'{TARGET_URL}/{path}' if path else TARGET_URL
-    
+    target_url = f'{TARGET_URL}/{path}'
     headers = {key: value for key, value in request.headers if key != 'Host'}
 
-    try:
-        if request.method == 'POST':
-            response = requests.post(target_url, headers=headers, data=request.form)
-        else:
-            response = requests.get(target_url, headers=headers, params=request.args)
-        
-        # If the target URL responds with a 4xx or 5xx status code
-        if response.status_code >= 400:
-            logging.info(f"Received {response.status_code} from {target_url}. Redirecting to error page.")
-            return redirect('/error')
-
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request to {target_url} failed: {e}")
-        return redirect('/error')
+    if request.method == 'POST':
+        response = requests.post(target_url, headers=headers, data=request.form)
+    else:
+        response = requests.get(target_url, headers=headers, params=request.args)
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]
@@ -61,6 +53,7 @@ def proxy(path):
 
                     links.forEach(link => {
                         link.addEventListener('click', function (event) {
+                            // Check if the link is external by comparing the hostname
                             const linkHost = new URL(link.href).hostname;
                             if (linkHost !== window.location.hostname) {
                                 event.preventDefault();
@@ -83,7 +76,6 @@ def proxy(path):
 
 @app.route('/error')
 def error_page():
-    # Custom error message about bandwidth limitations
     error_html = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -91,9 +83,10 @@ def error_page():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Bandwidth Limit Exceeded</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <style>
-            body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f8f8f8; }
-            .error-container { text-align: center; max-width: 600px; padding: 20px; background: #fff; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); border-radius: 8px; }
+            body { background-color: #f8f8f8; }
+            .error-container { text-align: center; max-width: 600px; margin: auto; padding: 20px; background: #fff; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); border-radius: 8px; }
             h1 { color: #d9534f; }
             p { font-size: 1.1em; }
         </style>
