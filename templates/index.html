@@ -254,21 +254,31 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none; /* Hide sidebar on small screens */
-            }
-            .chat-list {
-                width: 100%;
-            }
-            .chat-window {
-                width: 100%;
-            }
-            .chat-header-icons img {
-                width: 20px;
-                height: 20px;
-            }
-        }
+        /* Default state: hide sidebar on small screens */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 250px; /* Adjust the width as needed */
+        background-color: #333; /* Same background as your sidebar */
+        overflow-y: auto;
+    }
+
+    /* When the sidebar is active (visible) */
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Style for the burger menu icon */
+    .burger-menu {
+        display: inline-block;
+        cursor: pointer;
+    }
+}
 
         @media (max-width: 576px) {
             .content-view h2 {
@@ -416,6 +426,7 @@
         <div class="chat-window">
             <div class="chat-header">
                 <span id="chatHeaderTitle">SMS</span>
+                 <span class="burger-menu" onclick="toggleSidebar()">☰</span>
                 <div class="chat-header-icons">
                      <img src="{{ url_for('static', filename='images/search-icon.png') }}" alt="Search Icon">
                     <img src="{{ url_for('static', filename='images/call-icon.png') }}" alt="Call Icon">
@@ -495,12 +506,18 @@
                 view.classList.remove("active");
                 view.style.display = "none"; // Hide all views
             }
+          
             const activeView = document.getElementById(viewId);
             if (activeView) {
                 activeView.classList.add("active");
                 activeView.style.display = "block"; // Show the selected view
             }
         }
+
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('active');
+}
 
         function makeCall() {
             alert("Making a call...");
@@ -523,5 +540,4 @@
         }
     </script>
 </body>
-                                  </html>
-                      
+</html>
