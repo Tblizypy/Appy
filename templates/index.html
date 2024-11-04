@@ -1,1 +1,527 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Telegram-like Desktop Layout</title>
+    <style>
+        /* Reset styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1f2327;
+            color: #e1e1e1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left Column (Sidebar) */
+        .sidebar {
+            width: 20%;
+            background-color: #2b2f33;
+            border-right: 1px solid #393d42;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #2b2f33;
+            font-size: 1.2em;
+            justify-content: space-between;
+        }
+
+        .burger-menu {
+            font-size: 1.5em;
+            color: #e1e1e1;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #3a3f42;
+        }
+
+        .tab img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        /* Middle Column (Dynamic View) */
+        .chat-list {
+            width: 30%;
+            background-color: #1f2327;
+            border-right: 1px solid #393d42;
+            flex-shrink: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-view {
+            padding: 15px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .content-view h2 {
+            color: #4f8bff;
+            margin-bottom: 15px;
+        }
+
+        .call-item, .voicemail-item, .archive-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #3a3f42;
+            border-radius: 5px;
+        }
+
+        .call-item button, .voicemail-item button, .archive-item button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #4f8bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Right Column (Chat Window) */
+        .chat-window {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1f2327;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background-color: #2b2f33;
+            border-bottom: 1px solid #393d42;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-icons img {
+            width: 24px;
+            height: 24px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .chat-content {
+            padding: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .message-received, .message-sent {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message-received {
+            background-color: #3a3f42;
+            align-self: flex-start;
+        }
+
+        .message-sent {
+            background-color: #4f8bff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background-color: #2b2f33;
+            border-top: 1px solid #393d42;
+            align-items: center;
+        }
+
+        .message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            background-color: #3a3f42;
+            color: white;
+            border: none;
+            margin-right: 10px;
+        }
+
+        .send-button {
+            padding: 10px 15px;
+            background-color: #4f8bff;
+            border: none;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* Settings Menu Styles */
+        .settings-menu {
+            position: absolute;
+            right: 15px;
+            top: 70px;
+            background-color: #2b2f33;
+            border: 1px solid #393d42;
+            border-radius: 5px;
+            padding: 15px;
+            z-index: 1000;
+            width: 250px;
+            display: none;
+            color: #e1e1e1;
+        }
+
+        .settings-item {
+            margin-bottom: 10px;
+        }
+
+        .settings-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+		
+		 .dial-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+        .action-button {
+            margin: 5px;
+        }
+        /* Responsive media queries */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 25%;
+            }
+            .chat-list {
+                width: 35%;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar,
+            .chat-list {
+                width: 100%;
+                height: auto;
+            }
+            .chat-window {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Hide sidebar on small screens */
+            }
+            .chat-list {
+                width: 100%;
+            }
+            .chat-window {
+                width: 100%;
+            }
+            .chat-header-icons img {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .content-view h2 {
+                font-size: 1.2em;
+            }
+            .call-item button,
+            .voicemail-item button,
+            .archive-item button {
+                padding: 5px;
+                font-size: 0.9em;
+            }
+            .message-input {
+                padding: 8px;
+            }
+            .send-button {
+                padding: 8px 12px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Column (Sidebar) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>Control Panel</span>
+                <span class="burger-menu">☰</span>
+            </div>
+            <div class="tab" onclick="openView('allcontactsView')">
+                <img src="{{ url_for('static', filename='images/contact.png') }}" alt="Tab Icon">
+                <span>All Contacts</span>
+            </div>
+            <div class="tab" onclick="openView('foldersView')">
+                <img src="{{ url_for('static', filename='images/folder.png') }}" alt="Tab Icon">
+                <span>Folders</span>
+            </div>
+            <div class="tab" onclick="openView('missedCallsView')">
+                <img src="{{ url_for('static', filename='images/missed-call.png') }}" alt="Tab Icon">
+                <span>Missed Calls</span>
+            </div>
+            <div class="tab" onclick="openView('voicemailsView')">
+                <img src="{{ url_for('static', filename='images/voice-mail.png') }}" alt="Tab Icon">
+                <span>Voicemails</span>
+            </div>
+            <div class="tab" onclick="openView('archiveView')">
+                <img src="{{ url_for('static', filename='images/archive.png') }}" alt="Tab Icon">
+                <span>Archive</span>
+            </div>
+            <div class="tab" onclick="openView('dialpadView')">
+                <img src="{{ url_for('static', filename='images/keypad.png') }}" alt="Tab Icon">
+                <span>Dial-Pad</span>
+            </div>
+        </div>
+
+        <!-- Middle Column (Dynamic View) -->
+        <div class="chat-list">
+            <div id="allcontactsView" class="content-view">
+                <h2>All Contacts</h2>
+                <div class="call-item">
+                    <span>John Paul</span>
+                    <button onclick="callBack('John Paul')">Call</button>
+                </div>
+                <div class="call-item">
+                    <span>Paul Doe</span>
+                    <button onclick="callBack('Paul Doe')">Call</button>
+                </div>
+				 <div class="call-item">
+                    <span>John Paul</span>
+                    <button onclick="callBack('John Paul')">Call</button>
+                </div>
+                <div class="call-item">
+                    <span>Paul Doe</span>
+                    <button onclick="callBack('Paul Doe')">Call</button>
+                </div>
+				 <div class="call-item">
+                    <span>John Paul</span>
+                    <button onclick="callBack('John Paul')">Call</button>
+                </div>
+                <div class="call-item">
+                    <span>Paul Doe</span>
+                    <button onclick="callBack('Paul Doe')">Call</button>
+                </div>
+            </div>
+            <!-- Folders View -->
+        <div id="foldersView" class="content-view">
+            <h2>Folders</h2>
+            <button class="action-button" onclick="createFolder()">Create Folder</button>
+            <div id="folderList">
+                <div class="folder-item">Folder 1</div>
+                <div class="folder-item">Folder 2</div>
+                <!-- Folder items added dynamically here -->
+            </div>
+        </div>
+
+        <!-- Missed Calls View -->
+        <div id="missedCallsView" class="content-view">
+            <h2>Missed Calls</h2>
+            <div class="call-item">
+                <span>John Doe</span>
+                <button class="action-button" onclick="callBack('John Doe')">Call Back</button>
+            </div>
+            <div class="call-item">
+                <span>Jane Smith</span>
+                <button class="action-button" onclick="callBack('Jane Smith')">Call Back</button>
+            </div>
+        </div>
+
+        <!-- Voicemails View -->
+        <div id="voicemailsView" class="content-view">
+            <h2>Voicemails</h2>
+            <div class="voicemail-item">
+                <span>Message from Jane Doe</span>
+                <button class="action-button" onclick="listenVoicemail()">Listen</button>
+                <button class="action-button delete" onclick="deleteVoicemail()">Delete</button>
+            </div>
+       </div> 
+	   
+	    <!-- Archive View -->
+        <div id="archiveView" class="content-view">
+            <h2>Archived Contacts</h2>
+            <div class="archive-item">
+                <span>Jane Doe</span>
+                <button class="action-button" onclick="removeFromArchive('Jane Doe')">Remove from Archive</button>
+            </div>
+            <div class="archive-item">
+                <span>Paul Smith</span>
+                <button class="action-button" onclick="removeFromArchive('Paul Smith')">Remove from Archive</button>
+            </div>
+        </div>
+	   
+	   <!-- Dial Pad View -->
+<div id="dialpadView" class="content-view" style="display: none;">
+    <h2>Dial Pad</h2>
+    <div class="dial-pad">
+        <div>1</div><div>2</div><div>3</div>
+        <div>4</div><div>5</div><div>6</div>
+        <div>7</div><div>8</div><div>9</div>
+        <div>*</div><div>0</div><div>#</div>
+    </div>
+    <button onclick="makeCall()">Call</button>
+    <button onclick="sendSms()">Send SMS</button>
+    <button onclick="addToContacts()">Add to Contacts</button>
+</div>
+	   </div>
+                 <!-- Right Column (Chat Window) -->
+        <div class="chat-window">
+            <div class="chat-header">
+                <span id="chatHeaderTitle">SMS</span>
+                <div class="chat-header-icons">
+                     <img src="{{ url_for('static', filename='images/search-icon.png') }}" alt="Search Icon">
+                    <img src="{{ url_for('static', filename='images/call-icon.png') }}" alt="Call Icon">
+                    <img src="{{ url_for('static', filename='images/settings-icon.png') }}" alt="Settings Icon" onclick="toggleSettingsMenu()">
+                </div>
+            </div>
+            <div class="chat-content" id="chatContent">
+                <div class="message-received">Start a conversation</div>
+            </div>
+            <div class="input-area">
+                <input type="text" class="message-input" placeholder="Type a message">
+                <button class="send-button">Send</button>
+            </div>
+
+            <div class="settings-menu" id="settingsMenu">
+                <h3>Settings</h3>
+                <div class="settings-item">
+                    <label for="phoneNumber">Phone Number:</label>
+                    <input type="text" id="phoneNumber" placeholder="Enter phone number">
+                </div>
+				  <div class="settings-item">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Enter name">
+    </div>
+
+    <div class="settings-item">
+        <label for="address">Address:</label>
+        <input type="text" id="address" placeholder="Enter address">
+    </div>
+
+    <div class="settings-item">
+        <label for="ringtone">Ringtone:</label>
+        <input type="file" id="ringtone" placeholder="Enter ringtone file">
+    </div>
+
+    <div class="settings-item">
+        <label for="rings">Rings:</label>
+        <select id="rings">
+            <option value="">Number of rings</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <!-- Add more options as needed -->
+        </select>
+    </div>
+
+    <div class="settings-item">
+        <label for="ringVolume">Ring Volume:</label>
+        <input type="range" id="ringVolume" min="0" max="100">
+    </div>
+
+    <div class="settings-item">
+        <label for="untilVoicebox">Until Voicebox:</label>
+        <select id="untilVoicebox">
+            <option value="">Time until voicebox</option>
+            <option value="5">5 seconds</option>
+            <option value="10">10 seconds</option>
+            <option value="15">15 seconds</option>
+            <!-- Add more options as needed -->
+        </select>
+    </div>
+
+    <div class="settings-item">
+        <label for="voiceboxSound">Voicebox Sound File:</label>
+        <input type="file" id="voiceboxSound" placeholder="Enter voicebox sound file">
+    </div>
+                <!-- Additional settings... -->
+            </div>
+        </div>
+    </div>
+
+   
+    <script>
+        function openView(viewId) {
+            let views = document.getElementsByClassName("content-view");
+            for (let view of views) {
+                view.classList.remove("active");
+                view.style.display = "none"; // Hide all views
+            }
+            const activeView = document.getElementById(viewId);
+            if (activeView) {
+                activeView.classList.add("active");
+                activeView.style.display = "block"; // Show the selected view
+            }
+        }
+
+        function makeCall() {
+            alert("Making a call...");
+            // Add your calling logic here
+        }
+
+        function sendSms() {
+            alert("Sending SMS...");
+            // Add your SMS logic here
+        }
+
+        function addToContacts() {
+            alert("Adding to contacts...");
+            // Add your logic to add to contacts here
+        }
+		
+		function toggleSettingsMenu() {
+            let settingsMenu = document.getElementById("settingsMenu");
+            settingsMenu.style.display = settingsMenu.style.display === "block" ? "none" : "block";
+        }
+    </script>
+</body>
+                                  </html>
+                      
